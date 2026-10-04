@@ -29,9 +29,9 @@
         <p class="menu-subtitle">REAL-TIME SANDBOX · RPG WORLD</p>
         <div class="menu-actions">
           <button id="continueButton" class="menu-button" type="button">CONTINUE</button>
-          <button id="playButton" class="menu-button primary" type="button">PLAY WORLD</button>
-          <button id="playerMenuButton" class="menu-button" type="button">SELECT PLAYER</button>
-          <button id="worldMenuButton" class="menu-button" type="button">SELECT WORLD</button>
+          <button id="playButton" class="menu-button primary" type="button">SINGLE PLAYER</button>
+          <button id="playerMenuButton" class="menu-button" type="button">NEW PLAYER</button>
+          <button id="worldMenuButton" class="menu-button" type="button">NEW WORLD</button>
         </div>
         <div class="menu-footer">Mine · Build · Explore · Fight</div>
       </section>
@@ -39,15 +39,15 @@
       <section id="playerSelector" class="menu-panel selector-panel" hidden>
         <header class="selector-header">
           <button id="playerBack" class="icon-button" type="button" aria-label="Back">←</button>
-          <div><span>CHARACTERS</span><h1>SELECT PLAYER</h1></div>
-          <button id="selectorPlayerButton" class="mini-button" type="button">WORLDS</button>
+          <div><span>SINGLE PLAYER</span><h1>SELECT PLAYER</h1></div>
+          <button id="selectorWorldButton" class="mini-button" type="button">WORLDS</button>
         </header>
         <div id="playerCards" class="selector-list"></div>
         <div id="playerDetail" class="selector-detail"></div>
         <div class="selector-footer">
-          <div class="selector-tools"><button id="createPlayerButton" class="mini-button" type="button">CREATE NEW</button><button id="deletePlayerButton" class="mini-button danger" type="button" disabled>DELETE</button></div>
-          <span>Custom characters are saved in this browser.</span>
-          <button id="selectorPlayerButton" class="menu-button primary" type="button">WORLDS →</button>
+          <div class="selector-tools"><button id="createPlayerButton" class="mini-button" type="button">NEW</button><button id="deletePlayerButton" class="mini-button danger" type="button" disabled>DELETE</button></div>
+          <span>Choose a character to continue.</span>
+          <button id="selectorPlayerButton" class="menu-button primary" type="button">SELECT WORLD →</button>
         </div>
       </section>
 
@@ -60,7 +60,7 @@
         <div id="worldCards" class="selector-list"></div>
         <div id="worldDetail" class="selector-detail"></div>
         <div class="selector-footer">
-          <div class="selector-tools"><button id="createWorldButton" class="mini-button" type="button">CREATE NEW</button><button id="deleteWorldButton" class="mini-button danger" type="button" disabled>DELETE</button></div>
+          <div class="selector-tools"><button id="createWorldButton" class="mini-button" type="button">NEW</button><button id="deleteWorldButton" class="mini-button danger" type="button" disabled>DELETE</button></div>
           <span>Selected: <b id="selectedWorldLabel">Everdawn</b></span>
           <button id="startWorldButton" class="menu-button primary" type="button">PLAY WORLD</button>
         </div>
@@ -76,6 +76,7 @@
           <div class="creator-preview-wrap"><img id="creatorPreview" class="creator-preview" alt="Character preview"><div class="creator-preview-name">YOUR ADVENTURER</div></div>
           <div class="creator-form">
             <label>Name<input id="creatorPlayerName" maxlength="24" value="Adventurer" autocomplete="off"></label>
+            <label>Difficulty<select id="creatorPlayerMode"><option value="classic">Classic</option><option value="mediumcore">Mediumcore</option><option value="hardcore">Hardcore</option><option value="journey">Journey</option></select></label>
             <label>Archetype<select id="creatorPlayerStyle"><option value="balanced">Balanced</option><option value="guardian">Guardian</option><option value="ranged">Ranger</option><option value="mystic">Mystic</option></select></label>
             <div class="color-grid">
               <label>Skin<input id="creatorSkin" type="color" value="#a96f48"></label>
