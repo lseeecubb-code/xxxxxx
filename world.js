@@ -245,6 +245,10 @@ function hurtEnemy(enemy, amount, source = "attack", effect = null) {
     giveXp(Math.max(10, Math.floor((m?.hp || 20) * (enemy.elite ? 1.6 : 0.65))));
     GAME.discovered.add(enemy.name);
     GAME.enemies = GAME.enemies.filter((e) => e !== enemy);
+    GAME.flags.totalKills = (GAME.flags.totalKills || 0) + 1;
+    recordQuestKill(enemy.name);
+    storyOnKill(enemy.name);
+    checkProgressionAchievements();
     print("DEFEATED " + enemy.displayName + ".");
   }
 }
@@ -308,6 +312,22 @@ function updatePlayer(dt) {
     p.y = findSurface(p.x) - 0.02;
     p.hp = Math.max(1, p.hp - 15);
   }
+}
+
+function exploreArea() {
+  ensureWorld();
+  const zone = zoneAtX(GAME.player.x);
+  print("EXPLORE · " + zone.name);
+  print("Biome: " + zone.biome + " · Nearby enemies: " + zone.enemies.filter((n) => monsters[n]).map(title).join(", "));
+  for (let i = 0; i < 2; i++) {
+    const choices = zone.enemies.filter((n) => monsters[n]);
+    if (!choices.length) break;
+    const name = choice(choices);
+    const x = clamp(Math.floor(GAME.player.x + random(-7, 9)), 2, WORLD_W - 3);
+    spawnEnemy(name, x, Math.max(1, findSurface(x) - 0.01), Math.random() < 0.05);
+  }
+  GAME.discovered.add(zone.name);
+  toastMsg("AREA DISCOVERED · " + zone.name.toUpperCase());
 }
 
 function updateGame(time) {
@@ -396,6 +416,34 @@ function drawWorld() {
   ctx.fillStyle="#e9cf86"; ctx.fillRect(px-10,py-44,20,44);
   ctx.fillStyle="#f1ecfa"; ctx.fillRect(px-8,py-52,16,12);
   ctx.fillStyle="#050505"; ctx.fillRect(px-5,py-49,3,3); ctx.fillRect(px+2,py-49,3,3);
+  if (GAME.scene) {
+    const left = Math.max(0, GAME.scene.until - performance.now());
+    const total = Math.max(1, GAME.scene.until - GAME.scene.started);
+    const progress = clamp(left / total, 0, 1);
+    const key = String(GAME.scene.key || "").toLowerCase();
+    const hue = key.includes("fire") || key.includes("ember") || key.includes("hell") ? "#ff6b4a" :
+      key.includes("frost") || key.includes("white") ? "#bfe7ff" :
+      key.includes("redline") ? "#ff3838" : "#d5c8ff";
+    ctx.fillStyle = "#000";
+    ctx.globalAlpha = Math.min(0.72, 0.28 + progress * 0.42);
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = Math.min(1, progress * 1.2);
+    ctx.strokeStyle = hue;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(18, 18, w - 36, h - 36);
+    ctx.font = "700 18px ui-monospace";
+    ctx.textAlign = "center";
+    ctx.fillStyle = hue;
+    ctx.fillText(String(GAME.scene.label || GAME.scene.key || "SCENE").toUpperCase(), w / 2, h * 0.30);
+    const glyphs = GAME.scene.recipe?.glyphs || ["◆", "▣", "✦", "//", "ERR"];
+    for (let i = 0; i < Math.min(18, glyphs.length * 4); i++) {
+      const gx = (i * 137) % Math.max(1, w);
+      const gy = h * 0.45 + ((i * 71) % Math.max(1, h * 0.42));
+      ctx.globalAlpha = 0.18 + ((Math.sin(performance.now() / 200 + i) + 1) / 4) * progress;
+      ctx.fillText(glyphs[i % glyphs.length], gx, gy);
+    }
+    ctx.globalAlpha = 1;
+  }
   for (const part of GAME.particles) {
     ctx.globalAlpha=Math.max(0,part.life/0.7);
     ctx.fillStyle=part.bad ? "#ff6b7e" : "#e9cf86";
