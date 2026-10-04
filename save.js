@@ -15,6 +15,8 @@ function serializableGame() {
     inventory: GAME.inventory,
     enemies: GAME.enemies,
     flags: GAME.flags,
+    progress: GAME.progress || null,
+    story: GAME.story || null,
     discovered: [...GAME.discovered],
   };
 }
@@ -53,6 +55,8 @@ function loadGame() {
     GAME.inventory = { ...START_INV, ...(saved.inventory || {}) };
     GAME.enemies = Array.isArray(saved.enemies) ? saved.enemies : [];
     GAME.flags = saved.flags || {};
+    GAME.progress = saved.progress || null;
+    GAME.story = saved.story || null;
     GAME.discovered = new Set(saved.discovered || []);
     GAME.combat = null;
     GAME.scene = null;
@@ -77,6 +81,8 @@ function newGame() {
   GAME.drops = [];
   GAME.combat = null;
   GAME.flags = {};
+  GAME.progress = {quests:{},companions:{recruited:[],active:[],affinity:{},bondStep:{}},achievements:{},perks:[],storyMoments:[],faction:null,ending:null,hideout:{level:0,trophies:[]}};
+  GAME.story = {chapter:0,ending:null,moments:[],started:false,completed:false};
   GAME.discovered = new Set();
   GAME.selectedHotbar = 0;
   GAME.player = {
