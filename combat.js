@@ -3,6 +3,15 @@ const C = { PLAYER_DAMAGE:[4,8], CRIT:8, CRIT_MULT:1.8 };
 // It keeps the turn-based game's enemy roster, attack data, weapon skills, spells,
 // ailments, weaknesses and cinematic scene registry, but runs continuously in the world.
 
+function makeAttack(name, data){
+  const move={...(data||{})};
+  if(!move.damage && move.heal) move.damage=[1,1];
+  if(move.type==="fast") move.cooldown=0.45;
+  if(move.type==="heavy") move.cooldown=1.2;
+  if(move.type==="slow") move.cooldown=1.6;
+  return move;
+}
+
 const SPELLS = {
   "ember spark": { cost:2, element:"fire", damage:[10,16], effect:{type:"burn",chance:45,damage:3,turns:3} },
   frostbite: { cost:2, element:"frost", damage:[9,15], effect:{type:"slow",chance:55,turns:2} },
