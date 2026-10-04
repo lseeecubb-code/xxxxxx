@@ -15,6 +15,7 @@ function serializableGame() {
     worldName: GAME.worldName,
     worldSize: GAME.worldSize,
     worldDifficulty: GAME.worldDifficulty,
+    worldEvil: GAME.worldEvil || "random",
     world: GAME.world,
     player: GAME.player,
     inventory: GAME.inventory,
@@ -53,7 +54,8 @@ function loadGame() {
     GAME.playerId = saved.playerId || "lys";
     GAME.worldName = saved.worldName || "Everdawn";
     GAME.worldSize = saved.worldSize || "large";
-    GAME.worldDifficulty = saved.worldDifficulty || "classic";
+    GAME.worldDifficulty = String(saved.worldDifficulty || "classic").toLowerCase();
+    GAME.worldEvil = saved.worldEvil || "random";
     WORLD_H = saved.world?.length || 100;
     WORLD_W = saved.world?.[0]?.length || 180;
     GAME.world = saved.world;
@@ -91,8 +93,9 @@ function newGame(options = {}) {
   GAME.worldPreset = options.worldPreset || "everdawn";
   GAME.playerId = options.playerId || "lys";
   GAME.worldName = options.worldName || "Everdawn";
-  GAME.worldSize = options.worldSize || "large";
-  GAME.worldDifficulty = options.worldDifficulty || "classic";
+  GAME.worldSize = String(options.worldSize || "large").toLowerCase();
+  GAME.worldDifficulty = String(options.worldDifficulty || "classic").toLowerCase();
+  GAME.worldEvil = options.worldEvil || "random";
   const sizeTable = {small:[140,90],medium:[220,110],large:[320,140]};
   const dims = sizeTable[GAME.worldSize] || sizeTable.large;
   WORLD_W = dims[0];
