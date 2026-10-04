@@ -135,7 +135,8 @@ function ensureWorld() {
 function spawnEnemy(name, x, y, elite = false) {
   if (!monsters[name] || GAME.enemies.length >= 26) return;
   const m = monsters[name];
-  const scale = 1 + Math.max(0, GAME.player.level - (m.level || 1)) * 0.06;
+  const difficultyScale = ({classic:1,hard:1.15,expert:1.35,nightmare:1.65})[GAME.worldDifficulty] || 1;
+  const scale = difficultyScale * (1 + Math.max(0, GAME.player.level - (m.level || 1)) * 0.06);
   GAME.enemies.push({
     id: Math.random().toString(36).slice(2),
     name,
@@ -160,7 +161,8 @@ function findSurface(x) {
 
 function spawnAmbientEnemy() {
   const zone = zoneAtX(GAME.player.x);
-  if (GAME.enemies.length >= 12) return;
+  const maxEnemies = ({small:9,medium:12,large:16})[GAME.worldSize] || 12;
+  if (GAME.enemies.length >= maxEnemies) return;
   const name = choice(zone.enemies.filter((n) => monsters[n]));
   const side = Math.random() < 0.5 ? -1 : 1;
   const x = clamp(Math.floor(GAME.player.x + side * random(8, 15)), 2, WORLD_W - 3);
