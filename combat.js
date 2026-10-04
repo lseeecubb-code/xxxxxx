@@ -1,4 +1,5 @@
 // Real-time combat layer.
+const C = { PLAYER_DAMAGE:[4,8], CRIT:8, CRIT_MULT:1.8 };
 // It keeps the turn-based game's enemy roster, attack data, weapon skills, spells,
 // ailments, weaknesses and cinematic scene registry, but runs continuously in the world.
 
@@ -91,7 +92,7 @@ function playerCanAct() {
 function getWeaponSkill(name) {
   const weapon = ITEMS[GAME.player.equipment.weapon];
   const skills = weapon?.skills || [];
-  if (!skills.length || !SKILLS) return null;
+  if (!skills.length || typeof SKILLS === "undefined") return null;
   const id = name || skills[0];
   return SKILLS[id] ? { name:id, data:SKILLS[id] } : null;
 }
@@ -172,15 +173,15 @@ function playerAttack(target = null) {
   if (!playerCanAct()) return false;
   const enemy = selectTarget(target || combatTarget());
   if (!enemy) { toastMsg("NO TARGET"); return false; }
-  const ranged = /bow|staff|wand|scepter|rod/i.test(weapon);
   if (!ranged && distance(p, enemy) > 2.8 && target == null) { toastMsg("GET CLOSER"); return false; }
   const now = performance.now();
   if ((p.cooldownUntil || 0) > now) return false;
   const weapon = p.equipment.weapon || "wooden sword";
+  const ranged = /bow|staff|wand|scepter|rod/i.test(weapon);
   const item = ITEMS[weapon] || {damage:3};
   const skill = GAME.player.nextSkill ? getWeaponSkill(GAME.player.nextSkill) : getWeaponSkill(item.skills?.[0]);
   const data = skill?.data || {damage_mult:1, type:"normal"};
-  const base = rollDamage(C.PLAYER_DAMAGE) + Math.floor((getPlayerStats().damage + (item.damage || 0)) * 0.6);
+  const base = rollDamage(C.PLAYER_DAMAGE) + Math.floor((getPlayerStats().damage) * 0.6);
   const mult = data.damage_mult || 1;
   let damage = Math.max(1, Math.round(base * mult));
   if (Math.random()*100 < (C.CRIT + getPlayerStats().crit + (data.crit_bonus || 0))) {
