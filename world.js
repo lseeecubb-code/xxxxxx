@@ -135,7 +135,7 @@ function ensureWorld() {
 function spawnEnemy(name, x, y, elite = false) {
   if (!monsters[name] || GAME.enemies.length >= 26) return;
   const m = monsters[name];
-  const difficultyScale = ({classic:1,hard:1.15,expert:1.35,nightmare:1.65})[GAME.worldDifficulty] || 1;
+  const difficultyScale = ({journey:0.85,classic:1,hard:1.15,expert:1.35,master:1.65,nightmare:1.85,mediumcore:1.1,hardcore:1.25})[GAME.worldDifficulty] || 1;
   const scale = difficultyScale * (1 + Math.max(0, GAME.player.level - (m.level || 1)) * 0.06);
   GAME.enemies.push({
     id: Math.random().toString(36).slice(2),
