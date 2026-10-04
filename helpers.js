@@ -185,6 +185,8 @@ const GAME = {
   day: 1,
   time: 360,
   currentZone: "The Quiet Road",
+  worldPreset: "everdawn",
+  playerId: "lys",
   camera: { x: 0, y: 0 },
   render: { width: 1280, height: 720, dpr: 1 },
   keys: {},
