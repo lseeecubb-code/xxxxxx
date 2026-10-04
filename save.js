@@ -73,7 +73,11 @@ function loadGame() {
   }
 }
 
-function hasSaveGame(){\n  try { return !!localStorage.getItem(TER_SAVE_KEY); } catch (error) { return false; }\n}\n\nfunction newGame(options = {}) {
+function hasSaveGame(){
+  try { return !!localStorage.getItem(TER_SAVE_KEY); } catch (error) { return false; }
+}
+
+function newGame(options = {}) {
   try { localStorage.removeItem(TER_SAVE_KEY); } catch (error) {}
   GAME.seed = Number.isFinite(options.seed) ? options.seed : Math.floor(Math.random() * 1e9);
   GAME.worldPreset = options.worldPreset || "everdawn";
