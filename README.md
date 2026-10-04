@@ -67,7 +67,7 @@ Type commands into the terminal at the bottom of the screen.
 
 ## RPG systems
 
-TER-RPG carries over the turn-based game's data-driven RPG concepts, adapted for real-time play.
+TER-RPG carries over the original RPG game's data-driven content, but the player-facing gameplay is real-time action rather than turn-based combat.
 
 ### Combat
 
@@ -117,7 +117,7 @@ The world layer is intentionally independent from the terminal layer so more san
 
 ## Story
 
-The campaign structure follows the turn-based game's chapter progression while allowing the player to explore the sandbox between major encounters.
+The campaign structure follows the original RPG's chapter progression while allowing the player to explore the sandbox freely between major encounters.
 
 The current story framework includes 11 chapters, chapter bosses, a campaign chronicle and three endings:
 - Remember
@@ -166,7 +166,7 @@ The save includes the generated world, player state, inventory, enemies, discove
 
 ## Architecture
 
-The game intentionally follows the same straightforward style as THE LAST SAVE:
+The game intentionally follows the same straightforward JavaScript file structure as THE LAST SAVE, while using a real-time canvas world as the main game loop:
 
     index.html
        └── index.js
