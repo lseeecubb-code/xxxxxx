@@ -112,7 +112,15 @@ function renderWorldSelector(){
   const del=menuEl("deleteWorldButton"); if(del)del.disabled=!w.custom;
 }
 
-function applyPlayerPreset(def){const p=GAME.player,s=def.stats||archetypeStats("balanced");p.str=s.str;p.agi=s.agi;p.vit=s.vit;p.foc=s.foc;p.weapon=def.weapon||"wooden sword";p.equipment.weapon=ITEMS[p.weapon]?p.weapon:"wooden sword";p.spells=def.style==="Mystic"?["ember spark","frostbite","mend"]:def.style==="Ranged"?["ember spark","frostbite","mend"]:def.style==="Guardian"?["mend","ember spark"]:["ember spark","mend"];GAME.playerId=def.id;recalcPlayer();p.hp=p.maxHp;p.energy=p.maxEnergy;}
+function applyPlayerPreset(def){
+  const p=GAME.player,s=def.stats||archetypeStats("balanced");
+  p.str=s.str;p.agi=s.agi;p.vit=s.vit;p.foc=s.foc;
+  p.equipment.weapon="wooden sword";p.equipment.offhand=null;
+  if(def.weapon&&ITEMS[def.weapon]){
+    if(ITEMS[def.weapon].id==="offhand")p.equipment.offhand=def.weapon;
+    else p.equipment.weapon=def.weapon;
+  }
+  p.weapon=p.equipment.weapon;p.spells=def.style==="Mystic"?["ember spark","frostbite","mend"]:def.style==="Ranged"?["ember spark","frostbite","mend"]:def.style==="Guardian"?["mend","ember spark"]:["ember spark","mend"];GAME.playerId=def.id;recalcPlayer();p.hp=p.maxHp;p.energy=p.maxEnergy;}
 
 function startSelectedAdventure(){const p=selectedPlayer(),w=selectedWorld();newGame({seed:Number.isFinite(w.seed)?w.seed:freshSeedForWorld(w),worldPreset:w.type||w.id,worldName:w.name,worldSize:w.size,worldDifficulty:w.difficulty,playerId:p.id});applyPlayerPreset(p);GAME.world=createWorld();GAME.worldGenComplete=true;GAME.currentZone="The Quiet Road";GAME.camera.x=0;GAME.camera.y=0;GAME.player.x=12;GAME.player.y=findSurface(12)-0.02;GAME.enemies=[];GAME.discovered=new Set();GAME.flags.worldName=w.name;saveGame(true);enterGameplay();}
 
@@ -194,5 +202,7 @@ function initMenu(){
   menuEl("startWorldButton").addEventListener("click",startSelectedAdventure);
   menuEl("selectorPlayerButton").addEventListener("click",()=>setMenuScreen("world"));
   menuEl("menuButton").addEventListener("click",returnToMenu);
+  renderCreatorPreview();
+  renderWorldCreatorPreview();
   bootMenu();
 }
