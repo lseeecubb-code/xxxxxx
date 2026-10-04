@@ -272,16 +272,14 @@ function monsterAttack(enemy) {
   if (!enemy || enemy.hp <= 0 || p.hp <= 0) return;
   const {name, data} = chooseEnemyAttack(enemy);
   const move = makeAttack(name, data);
-  const rangedName = /bow|shot|bolt|projectile|missile|beam|lance|spell|ray|fireball|frost/i.test(name) || data?.ranged;
-  if(rangedName){
-    const dx=p.x-enemy.x,dy=(p.y-0.8)-enemy.y,len=Math.max(0.001,Math.hypot(dx,dy));
-    const amount=move.damage ? rollDamage(move.damage) : randint(2,6);
-    fireProjectile({x:enemy.x,y:enemy.y-0.8,tx:p.x,ty:p.y-0.8,speed:Number(data?.speed)||9,damage:amount,effect:data?.special_effect||null,source:"enemy",element:data?.element||null});
-    if(sceneKey){ /* visual already selected below */ }
-    return;
-  }
   const sceneKey = getAttackScene(enemy.name, name);
   if (sceneKey) showAttackScene(sceneKey, enemy.name, name);
+  const rangedName = /bow|shot|bolt|projectile|missile|beam|lance|spell|ray|fireball|frost/i.test(name) || data?.ranged;
+  if(rangedName){
+    const amount=move.damage ? rollDamage(move.damage) : randint(2,6);
+    fireProjectile({x:enemy.x,y:enemy.y-0.8,tx:p.x,ty:p.y-0.8,speed:Number(data?.speed)||9,damage:amount,effect:data?.special_effect||null,source:"enemy",element:data?.element||null});
+    return;
+  }
   const now = performance.now();
   const dodgeChance = getPlayerStats().dodge + (p.guardUntil > now ? 25 : 0);
   if (move.dodgeable !== false && Math.random()*100 < Math.min(90, dodgeChance)) {
