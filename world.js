@@ -122,6 +122,15 @@ function bindWorldInput() {
     if (event.button === 0) GAME.mouse.down = false;
     if (event.button === 2) GAME.mouse.rightDown = false;
   });
+  window.addEventListener("mouseup", () => {
+    GAME.mouse.down = false;
+    GAME.mouse.rightDown = false;
+  });
+  window.addEventListener("blur", () => {
+    GAME.mouse.down = false;
+    GAME.mouse.rightDown = false;
+    GAME.keys = {};
+  });
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 }
 
@@ -204,6 +213,17 @@ function mineTarget() {
   const d = Math.hypot(target.tx + 0.5 - GAME.player.x, target.ty + 0.5 - (GAME.player.y - 0.6));
   if (d > 6) { toastMsg("TOO FAR"); return false; }
   if (!BLOCKS[target.block]?.solid) return false;
+  const key=target.tx+","+target.ty;
+  GAME.mineState ||= {};
+  const state=GAME.mineState[key] || {hits:0};
+  state.hits++;
+  const hardness={grass:1,dirt:1,wood:2,sand:1,snow:1,stone:3,copper:4,iron:5,silver:6,gold:7,crystal:8,obsidian:10,ash:2}[target.block]||3;
+  if(state.hits < hardness){
+    GAME.mineState[key]=state;
+    GAME.particles.push({x:target.tx+0.5,y:target.ty+0.5,life:0.3,text:state.hits+"/"+hardness});
+    return false;
+  }
+  delete GAME.mineState[key];
   GAME.world[target.ty][target.tx] = "air";
   const drop = BLOCKS[target.block].drop;
   if (drop && drop !== "sand" && drop !== "snow" && drop !== "ash") addItem(drop, 1, true);
@@ -419,6 +439,10 @@ function drawWorld() {
     GAME.worldPreset === "nullreach" ? "#05020a" :
     zone.biome === "ash" ? "#130d0d" : zone.biome === "void" ? "#05030a" : "#050a10";
   ctx.fillRect(0, 0, w, h);
+  if (daylight > 0.25) {
+    ctx.fillStyle="#ffffff18";
+    for(let i=0;i<5;i++){const cx=(i*290+GAME.camera.x*5)%Math.max(1,w);const cy=70+(i%3)*42;ctx.fillRect(cx,cy,48,8);ctx.fillRect(cx+12,cy-5,24,10);}
+  }
   const stars = 80;
   ctx.fillStyle = "#ffffff99";
   for (let i=0;i<stars;i++) {
@@ -452,7 +476,7 @@ function drawWorld() {
   }
   for (const d of GAME.drops) {
     const px=(d.x-GAME.camera.x)*TILE, py=(d.y-GAME.camera.y)*TILE;
-    ctx.fillStyle="#e9cf86"; ctx.fillRect(px-3,py-3,6,6);
+    ctx.fillStyle=d.color||"#e9cf86"; ctx.fillRect(px-3,py-3,6,6);
   }
   for (const e of GAME.enemies) {
     const px=(e.x-GAME.camera.x)*TILE, py=(e.y-GAME.camera.y)*TILE;
@@ -467,16 +491,21 @@ function drawWorld() {
   }
   const p=GAME.player;
   const playerDef = (typeof PLAYER_DEFS !== "undefined" && PLAYER_DEFS[GAME.playerId]) || {};
+  const skin = playerDef.skin || "#a96f48";
+  const shirt = playerDef.shirt || (playerDef.accent==="violet" ? "#46354a" : playerDef.accent==="cyan" ? "#19615e" : "#7e5139");
+  const hair = playerDef.hair || (playerDef.accent==="violet" ? "#2d2637" : playerDef.accent==="cyan" ? "#1f7e79" : "#6f3e28");
   const px=(p.x-GAME.camera.x)*TILE, py=(p.y-GAME.camera.y)*TILE;
   const aimX = GAME.mouse.worldX - p.x, aimY = GAME.mouse.worldY - (p.y - 0.8);
   const facing = Math.sign(aimX || 1);
   ctx.save();
   ctx.translate(px,py);
   ctx.scale(facing,1);
-  ctx.fillStyle=playerDef.accent==="violet" ? "#806a9c" : playerDef.accent==="cyan" ? "#5ed2e0" : "#e9cf86"; ctx.fillRect(-10,-44,20,44);
-  ctx.fillStyle="#f1ecfa"; ctx.fillRect(-8,-56,16,12);
+  ctx.fillStyle=shirt; ctx.fillRect(-10,-38,20,26);
+  ctx.fillStyle="#32405a"; ctx.fillRect(-10,-12,20,12);
+  ctx.fillStyle=skin; ctx.fillRect(-8,-54,16,16);
+  ctx.fillStyle=hair; ctx.fillRect(-9,-57,18,6);
   ctx.fillStyle="#050505"; ctx.fillRect(-5,-49,3,3); ctx.fillRect(2,-49,3,3);
-  ctx.strokeStyle="#e9cf86"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(8,-28); ctx.lineTo(24,-22); ctx.stroke();
+  ctx.strokeStyle=playerDef.accent==="cyan" ? "#e7f8ff" : playerDef.accent==="violet" ? "#d6c6ff" : "#f0d38a"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(8,-28); ctx.lineTo(24,-22); ctx.stroke();
   ctx.restore();
   if (GAME.scene) {
     const left = Math.max(0, GAME.scene.until - performance.now());
