@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="TER-RPG: a Terraria-inspired sandbox with THE LAST SAVE's RPG systems.">
+  <title>TER-RPG</title>
+  <link rel="stylesheet" href="styles.css?v=20261004-01">
+</head>
+<body>
+  <main id="app" class="app">
+    <section class="game-shell" aria-label="TER-RPG">
+      <canvas id="world" aria-label="2D world"></canvas>
+      <div class="hud">
+        <div class="hud-line">
+          <strong id="gameTitle">TER-RPG</strong>
+          <span id="zoneLabel">THE QUIET ROAD</span>
+          <span id="clockLabel">DAY 1 · 06:00</span>
+        </div>
+        <div class="bars">
+          <div class="bar"><span>HP</span><i><b id="hpFill"></b></i><em id="hpText"></em></div>
+          <div class="bar"><span>EN</span><i><b id="energyFill"></b></i><em id="energyText"></em></div>
+          <div class="bar"><span>XP</span><i><b id="xpFill"></b></i><em id="xpText"></em></div>
+        </div>
+      </div>
+
+      <aside id="inventoryPanel" class="panel inventory-panel" hidden>
+        <header>INVENTORY <button id="closeInventory" type="button">×</button></header>
+        <div id="inventoryList"></div>
+      </aside>
+
+      <aside id="craftPanel" class="panel craft-panel" hidden>
+        <header>CRAFTING <button id="closeCraft" type="button">×</button></header>
+        <div id="craftList"></div>
+      </aside>
+
+      <section class="terminal" aria-label="Game terminal">
+        <div id="screen" class="screen" aria-live="polite"></div>
+        <div class="input-row">
+          <span class="prompt">&gt;&gt;&gt;</span>
+          <input id="command" autocomplete="off" spellcheck="false" placeholder="Type a command..." aria-label="Game command">
+        </div>
+        <footer class="footer">
+          <span>WASD / arrows move · mouse mine/place · 1–9 hotbar · I inventory · C craft</span>
+          <span id="saveStatus">AUTOSAVE ON</span>
+        </footer>
+      </section>
+
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script src="items.js?v=20261004-01"></script>
+  <script src="monsters.js?v=20261004-01"></script>
+  <script src="scenes.js?v=20261004-01"></script>
+  <script src="helpers.js?v=20261004-01"></script>
+  <script src="world.js?v=20261004-01"></script>
+  <script src="combat.js?v=20261004-01"></script>
+  <script src="crafting.js?v=20261004-01"></script>
+  <script src="save.js?v=20261004-01"></script>
+  <script src="index.js?v=20261004-01"></script>
+</body>
+</html>
