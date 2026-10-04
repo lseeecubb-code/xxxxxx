@@ -403,6 +403,18 @@ function updateGame(time) {
   for (const e of GAME.enemies) updateEnemy(e, dt);
   updateProjectiles(dt);
   GAME.enemies = GAME.enemies.filter((e) => e.hp > 0);
+  if(GAME.drops?.length){
+    GAME.drops = GAME.drops.filter((d)=>{
+      if(distance(GAME.player,d)<1.15){
+        addItem(d.item,d.amount,true);
+        GAME.particles.push({x:d.x,y:d.y-0.25,life:0.55,text:"+"+d.amount+" "+d.item});
+        return false;
+      }
+      d.y += 0.02;
+      d.life=(d.life||12)-dt;
+      return d.life>0;
+    });
+  }
   GAME.spawnCooldown -= dt;
   if (GAME.spawnCooldown <= 0) {
     GAME.spawnCooldown = random(1.5, 3.5);
