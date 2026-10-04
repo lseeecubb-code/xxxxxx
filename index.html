@@ -10,7 +10,58 @@
 </head>
 <body>
   <main id="app" class="app">
-    <section class="game-shell" aria-label="TER-RPG">
+    <div id="bootScreen" class="boot-screen">
+      <div class="boot-sky"></div>
+      <img class="boot-logo" src="assets/ter-rpg-logo.svg" alt="TER-RPG">
+      <div class="loading-frame">
+        <div class="loading-top"><span id="loadingLabel">GENERATING STARTUP DATA…</span><span id="loadingPercent">0%</span></div>
+        <div class="loading-track"><b id="loadingFill"></b></div>
+      </div>
+      <p id="bootTip" class="boot-tip">Preparing the world…</p>
+    </div>
+
+    <div id="menuBackdrop" class="menu-backdrop" hidden>
+      <div class="menu-stars"></div>
+      <div class="menu-glow"></div>
+
+      <section id="mainMenu" class="menu-panel menu-main" hidden>
+        <img class="menu-logo" src="assets/ter-rpg-logo.svg" alt="TER-RPG">
+        <p class="menu-subtitle">REAL-TIME SANDBOX · RPG WORLD</p>
+        <div class="menu-actions">
+          <button id="continueButton" class="menu-button" type="button">CONTINUE</button>
+          <button id="playButton" class="menu-button primary" type="button">PLAY WORLD</button>
+          <button id="playerMenuButton" class="menu-button" type="button">SELECT PLAYER</button>
+          <button id="worldMenuButton" class="menu-button" type="button">SELECT WORLD</button>
+        </div>
+        <div class="menu-footer">Mine · Build · Explore · Fight</div>
+      </section>
+
+      <section id="playerSelector" class="menu-panel selector-panel" hidden>
+        <header class="selector-header">
+          <button id="playerBack" class="icon-button" type="button" aria-label="Back">←</button>
+          <div><span>CHARACTERS</span><h1>SELECT PLAYER</h1></div>
+          <button id="selectorPlayerButton" class="mini-button" type="button">WORLDS</button>
+        </header>
+        <div id="playerCards" class="selector-list"></div>
+        <div id="playerDetail" class="selector-detail"></div>
+        <div class="selector-footer"><span>Player choice changes your starting stats and gear.</span><button class="menu-button primary" type="button" disabled>PLAY SELECTED</button></div>
+      </section>
+
+      <section id="worldSelector" class="menu-panel selector-panel" hidden>
+        <header class="selector-header">
+          <button id="worldBack" class="icon-button" type="button" aria-label="Back">←</button>
+          <div><span>WORLDS</span><h1>SELECT WORLD</h1></div>
+          <button id="selectorWorldButton" class="mini-button" type="button" disabled>READY</button>
+        </header>
+        <div id="worldCards" class="selector-list"></div>
+        <div id="worldDetail" class="selector-detail"></div>
+        <div class="selector-footer">
+          <span>Selected: <b id="selectedWorldLabel">Everdawn</b></span>
+          <button id="startWorldButton" class="menu-button primary" type="button">PLAY</button>
+        </div>
+      </section>
+    </div>
+    <section id="gameShell" class="game-shell" aria-label="TER-RPG" hidden>
       <canvas id="world" tabindex="0" aria-label="2D game world"></canvas>
 
       <div class="hud">
@@ -30,6 +81,7 @@
           <button id="inventoryButton" type="button">Inventory</button>
           <button id="craftButton" type="button">Craft</button>
           <button id="consoleButton" type="button">Console</button>
+          <button id="menuButton" type="button">Menu</button>
         </div>
       </div>
 
@@ -69,7 +121,8 @@
   <script src="crafting.js?v=20261004-02"></script>
   <script src="systems.js?v=20261004-01"></script>
   <script src="story.js?v=20261004-01"></script>
-  <script src="save.js?v=20261004-03"></script>
-  <script src="index.js?v=20261004-04"></script>
+  <script src="save.js?v=20261004-04"></script>
+  <script src="menu.js?v=20261004-01"></script>
+  <script src="index.js?v=20261004-05"></script>
 </body>
 </html>
