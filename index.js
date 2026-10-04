@@ -15,6 +15,7 @@ const craftButton = document.getElementById("craftButton");
 
 let commandHistory = [];
 let historyIndex = -1;
+let gameLoopRunning = false;
 
 function print(text = "") {
   termScreen.textContent += (termScreen.textContent ? "\n" : "") + String(text);
@@ -189,21 +190,28 @@ window.addEventListener("keydown", (event) => {
   if (key === "f") useCombatItem("potion");
 });
 
-function startup() {
-  if (!loadGame()) {
-    newGame();
-    print("TER-RPG initialized.");
-    print("Real-time sandbox ready. Move and fight directly in the world.");
-  } else {
-    print("Save restored.");
-  }
+function startGameLoop() {
+  if (gameLoopRunning) return;
+  gameLoopRunning = true;
+  GAME.gameStarted = true;
+  GAME.lastTime = 0;
+  ensureWorld();
   ensureProgressionState();
   ensureStory();
   storyIntro();
-  consolePanel.hidden = true;
-  document.getElementById("world").focus();
-  resizeCanvas();
   requestAnimationFrame(gameFrame);
+}
+
+function stopGameLoop() {
+  gameLoopRunning = false;
+  GAME.gameStarted = false;
+}
+
+function startup() {
+  consolePanel.hidden = true;
+  menuEl("gameShell").hidden = true;
+  menuEl("menuBackdrop").hidden = true;
+  initMenu();
 }
 
 function resizeCanvas() {
