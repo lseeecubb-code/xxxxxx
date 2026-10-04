@@ -26,6 +26,7 @@ const BLOCKS = {
 const START_INV = { coin: 100, wood: 35, stone: 20, iron: 8, potion: 2 };
 const HOTBAR = ["wooden sword", "stone", "dirt", "wood", "torch", "potion", "bomb", "ember spark", "frostbite"];
 
+const percent = (chance) => (Math.random() * 100) < chance;
 const random = (a = 0, b = 1) => a + Math.random() * (b - a);
 const randint = (a, b) => Math.floor(random(a, b + 1));
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
