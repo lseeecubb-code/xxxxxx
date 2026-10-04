@@ -10,6 +10,8 @@ function serializableGame() {
     day: GAME.day,
     time: GAME.time,
     currentZone: GAME.currentZone,
+    worldPreset: GAME.worldPreset,
+    playerId: GAME.playerId,
     world: GAME.world,
     player: GAME.player,
     inventory: GAME.inventory,
@@ -44,6 +46,8 @@ function loadGame() {
     GAME.day = saved.day || 1;
     GAME.time = Number(saved.time) || 360;
     GAME.currentZone = saved.currentZone || "The Quiet Road";
+    GAME.worldPreset = saved.worldPreset || "everdawn";
+    GAME.playerId = saved.playerId || "lys";
     GAME.world = saved.world;
     GAME.player = {
       ...GAME.player,
@@ -69,9 +73,11 @@ function loadGame() {
   }
 }
 
-function newGame() {
+function hasSaveGame(){\n  try { return !!localStorage.getItem(TER_SAVE_KEY); } catch (error) { return false; }\n}\n\nfunction newGame(options = {}) {
   try { localStorage.removeItem(TER_SAVE_KEY); } catch (error) {}
-  GAME.seed = Math.floor(Math.random() * 1e9);
+  GAME.seed = Number.isFinite(options.seed) ? options.seed : Math.floor(Math.random() * 1e9);
+  GAME.worldPreset = options.worldPreset || "everdawn";
+  GAME.playerId = options.playerId || "lys";
   GAME.day = 1;
   GAME.time = 360;
   GAME.currentZone = "The Quiet Road";
