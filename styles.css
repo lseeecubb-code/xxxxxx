@@ -142,7 +142,7 @@ body{overflow:hidden;color:var(--text);user-select:none}
   .selector-footer{align-items:stretch;flex-direction:column}
 }
 
-.creator-panel{width:min(820px,94vw)}
+.creator-panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:52;width:min(820px,94vw)}
 .mini-label{padding:8px 10px;color:#5f566d;font-size:8px;letter-spacing:.12em}
 .creator-grid{display:grid;grid-template-columns:240px 1fr;gap:22px;align-items:start;margin-top:18px}
 .creator-preview-wrap{border:1px solid #2b2440;background:#05050b;padding:14px;text-align:center}
