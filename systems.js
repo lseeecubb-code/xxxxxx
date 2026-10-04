@@ -138,7 +138,7 @@ function changeBond(id, delta=10){
   if(step>old){
     c.bondStep[id]=step;
     const line=COMPANION_DEFS[id]?.bond?.[step-1];
-    if(line) print("MIRA_BOND".startsWith(COMPANION_DEFS[id].name.toUpperCase())?line:COMPANION_DEFS[id].name+" remembers: "+line);
+    if(line) print(COMPANION_DEFS[id].name+" remembers: "+line);
   }
 }
 
