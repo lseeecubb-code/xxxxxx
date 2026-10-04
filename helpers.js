@@ -3,8 +3,8 @@
 
 const GAME_VERSION = "0.1.0";
 const TILE = 32;
-const WORLD_W = 180;
-const WORLD_H = 100;
+let WORLD_W = 180;
+let WORLD_H = 100;
 
 const BLOCKS = {
   air: { solid: false, color: "#00000000" },
