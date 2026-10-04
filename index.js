@@ -8,6 +8,10 @@ const craftPanel = document.getElementById("craftPanel");
 const inventoryList = document.getElementById("inventoryList");
 const craftList = document.getElementById("craftList");
 const toast = document.getElementById("toast");
+const consolePanel = document.getElementById("console");
+const consoleButton = document.getElementById("consoleButton");
+const inventoryButton = document.getElementById("inventoryButton");
+const craftButton = document.getElementById("craftButton");
 
 let commandHistory = [];
 let historyIndex = -1;
@@ -38,7 +42,7 @@ function renderHud() {
   document.getElementById("energyText").textContent = p.energy + "/" + maxEnergy;
   document.getElementById("xpFill").style.width = xpPct + "%";
   document.getElementById("xpText").textContent = p.xp + "/" + xpGoal;
-  document.getElementById("zoneLabel").textContent = WORLD.currentZone.toUpperCase();
+  document.getElementById("zoneLabel").textContent = GAME.currentZone.toUpperCase();
   document.getElementById("clockLabel").textContent = "DAY " + WORLD.day + " · " + worldClockText();
 }
 
@@ -69,21 +73,9 @@ function togglePanel(panel, visible) {
 }
 
 function showHelp() {
-  print("TER-RPG commands:");
-  print("  help — show this help");
-  print("  explore — reveal nearby terrain and encounters");
-  print("  mine — mine the block under the cursor");
-  print("  place [block] — place a block in front of you");
-  print("  inventory — open inventory");
-  print("  craft [item] — craft an item");
-  print("  fight — target the nearest enemy");
-  print("  attack — use your equipped weapon");
-  print("  spell [name] — cast a known spell");
-  print("  save / load — local save slot");
-  print("  stats — show RPG stats");
-  print("  bestiary — show discovered enemies");
-  print("  scenes — list scene hooks");
-  print("  new — start a fresh world");
+  print("TER-RPG is real-time.");
+  print("Move, jump, mine, build, aim, attack and explore directly in the world.");
+  print("The console is optional; use it for RPG information and commands.");
 }
 
 function showStats() {
@@ -114,42 +106,31 @@ function showScenes() {
   print("Use fight [enemy] to trigger opening and attack scenes in-world.");
 }
 
-async function handleCommand(raw) {
+async async function handleCommand(raw) {
   const line = raw.trim();
   if (!line) return;
   commandHistory.push(line);
   if (commandHistory.length > 80) commandHistory.shift();
   historyIndex = commandHistory.length;
-
   const [command, ...rest] = line.split(/\s+/);
   const arg = rest.join(" ").trim().toLowerCase();
   switch (command.toLowerCase()) {
     case "help": showHelp(); break;
     case "stats": showStats(); break;
     case "inventory":
-    case "i":
-      refreshInventory(); togglePanel(inventoryPanel, true); togglePanel(craftPanel, false); break;
+    case "i": refreshInventory(); togglePanel(inventoryPanel,true); togglePanel(craftPanel,false); break;
     case "craft":
-    case "c":
-      if (!arg) { refreshCrafting(); togglePanel(craftPanel, true); togglePanel(inventoryPanel, false); break; }
-      craftItem(arg); break;
+    case "c": if (!arg) { refreshCrafting(); togglePanel(craftPanel,true); togglePanel(inventoryPanel,false); } else craftItem(arg); break;
     case "recipes": listRecipes(arg); break;
     case "use": useCombatItem(arg || "potion"); break;
-    case "equip": {
-      const item = findItemMatch(arg);
-      if (item) equipItem(item); else print("Unknown gear: " + arg);
-      break;
-    }
+    case "equip": { const item=findItemMatch(arg); if(item) equipItem(item); else print("Unknown gear: "+arg); break; }
     case "quests": showQuests(); break;
     case "party": showParty(); break;
-    case "perks": if (arg) unlockPerk(arg); else showPerks(); break;
+    case "perks": if(arg) unlockPerk(arg); else showPerks(); break;
     case "story": showStory(); break;
     case "guide": showGuide(); break;
     case "chronicle": showChronicle(); break;
-    case "ending":
-      if (arg && chooseEnding(arg)) break;
-      showEnding();
-      break;
+    case "ending": if(arg && chooseEnding(arg)) break; showEnding(); break;
     case "town": showTown(); break;
     case "explore": exploreArea(); break;
     case "mine": mineTarget(); break;
@@ -161,10 +142,9 @@ async function handleCommand(raw) {
     case "journal": showBestiary(); break;
     case "scenes": showScenes(); break;
     case "save": saveGame(); break;
-    case "load": loadGame(); break;
-    case "new": newGame(); break;
-    default:
-      print("Unknown command '" + command + "'. Type 'help'.");
+    case "load": if(loadGame()) print("SAVE RESTORED."); else print("NO SAVE FOUND."); break;
+    case "new": newGame(); print("NEW WORLD GENERATED."); break;
+    default: print("Unknown command '" + command + "'. Type 'help'.");
   }
 }
 
@@ -192,28 +172,35 @@ termInput.addEventListener("keydown", async (event) => {
 
 document.getElementById("closeInventory").addEventListener("click", () => togglePanel(inventoryPanel, false));
 document.getElementById("closeCraft").addEventListener("click", () => togglePanel(craftPanel, false));
+inventoryButton.addEventListener("click", () => { refreshInventory(); togglePanel(inventoryPanel,true); togglePanel(craftPanel,false); });
+craftButton.addEventListener("click", () => { refreshCrafting(); togglePanel(craftPanel,true); togglePanel(inventoryPanel,false); });
+consoleButton.addEventListener("click", () => {
+  consolePanel.hidden = !consolePanel.hidden;
+  if (!consolePanel.hidden) termInput.focus();
+});
 
 window.addEventListener("keydown", (event) => {
-  if (event.key.toLowerCase() === "i") {
-    refreshInventory(); togglePanel(inventoryPanel, true); togglePanel(craftPanel, false);
-  }
-  if (event.key.toLowerCase() === "c") {
-    refreshCrafting(); togglePanel(craftPanel, true); togglePanel(inventoryPanel, false);
-  }
-  if (event.key === "/" && document.activeElement !== termInput) {
-    event.preventDefault();
-    termInput.focus();
-  }
+  if (document.activeElement === termInput) return;
+  const key = event.key.toLowerCase();
+  if (key === "i") { refreshInventory(); togglePanel(inventoryPanel,true); togglePanel(craftPanel,false); }
+  if (key === "c") { refreshCrafting(); togglePanel(craftPanel,true); togglePanel(inventoryPanel,false); }
+  if (key === "/" ) { event.preventDefault(); consolePanel.hidden = false; termInput.focus(); }
+  if (key === "escape") { inventoryPanel.hidden = true; craftPanel.hidden = true; }
+  if (key === "f") useCombatItem("potion");
 });
 
 function startup() {
   if (!loadGame()) {
     newGame();
     print("TER-RPG initialized.");
-    print("A sandbox world is ready. Type 'help' to see the command layer.");
+    print("Real-time sandbox ready. Move and fight directly in the world.");
   } else {
     print("Save restored.");
   }
+  ensureProgressionState();
+  ensureStory();
+  storyIntro();
+  consolePanel.hidden = true;
   termInput.focus();
   resizeCanvas();
   requestAnimationFrame(gameFrame);
