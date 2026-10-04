@@ -78,7 +78,9 @@ function bindWorldInput() {
     GAME.keys[key] = true;
     if (/^[1-9]$/.test(event.key)) {
       GAME.selectedHotbar = Number(event.key) - 1;
-      toastMsg("HOTBAR " + event.key + " · " + HOTBAR[GAME.selectedHotbar]);
+      const selected = HOTBAR[GAME.selectedHotbar];
+      if (ITEMS[selected] && GAME.inventory[selected]) equipItem(selected);
+      else toastMsg("HOTBAR " + event.key + " · " + selected.toUpperCase());
     }
     if (["arrowleft","arrowright","arrowup","arrowdown"," ","a","d","w","s"].includes(key) && document.activeElement !== termInput) {
       event.preventDefault();
@@ -102,11 +104,13 @@ function bindWorldInput() {
     GAME.mouse.y = event.clientY - rect.top;
   });
   canvas.addEventListener("mousedown", (event) => {
-    if (event.button === 0) mineOrAttackAtCursor();
-    if (event.button === 2) {
-      event.preventDefault();
-      placeAtCursor();
-    }
+    event.preventDefault();
+    if (event.button === 0) GAME.mouse.down = true;
+    if (event.button === 2) GAME.mouse.rightDown = true;
+  });
+  canvas.addEventListener("mouseup", (event) => {
+    if (event.button === 0) GAME.mouse.down = false;
+    if (event.button === 2) GAME.mouse.rightDown = false;
   });
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 }
@@ -337,7 +341,26 @@ function updateGame(time) {
   GAME.time += dt * 4.2;
   updateMouseWorld();
   updatePlayer(dt);
+  if (GAME.mouse.down) {
+    GAME.useHeldUntil = GAME.useHeldUntil || 0;
+    if (performance.now() >= GAME.useHeldUntil) {
+      mineOrAttackAtCursor();
+      GAME.useHeldUntil = performance.now() + 145;
+    }
+  } else {
+    GAME.useHeldUntil = 0;
+  }
+  if (GAME.mouse.rightDown) {
+    GAME.placeUntil = GAME.placeUntil || 0;
+    if (performance.now() >= GAME.placeUntil) {
+      placeAtCursor();
+      GAME.placeUntil = performance.now() + 110;
+    }
+  } else {
+    GAME.placeUntil = 0;
+  }
   for (const e of GAME.enemies) updateEnemy(e, dt);
+  updateProjectiles(dt);
   GAME.enemies = GAME.enemies.filter((e) => e.hp > 0);
   GAME.spawnCooldown -= dt;
   if (GAME.spawnCooldown <= 0) {
@@ -396,6 +419,13 @@ function drawWorld() {
     if (b==="crystal") { ctx.fillStyle="#e8e0ff99"; ctx.fillRect(px+8,py+7,5,16); }
     if (b==="gold") { ctx.fillStyle="#fff1c488"; ctx.fillRect(px+5,py+6,4,4); ctx.fillRect(px+18,py+17,4,4); }
   }
+  if (GAME.mouse.worldX >= 0 && GAME.mouse.worldY >= 0) {
+    const mx = (GAME.mouse.worldX - GAME.camera.x) * TILE;
+    const my = (GAME.mouse.worldY - GAME.camera.y) * TILE;
+    ctx.strokeStyle = "#ffffff88";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(mx - 6, my - 6, 12, 12);
+  }
   for (const d of GAME.drops) {
     const px=(d.x-GAME.camera.x)*TILE, py=(d.y-GAME.camera.y)*TILE;
     ctx.fillStyle="#e9cf86"; ctx.fillRect(px-3,py-3,6,6);
@@ -413,9 +443,16 @@ function drawWorld() {
   }
   const p=GAME.player;
   const px=(p.x-GAME.camera.x)*TILE, py=(p.y-GAME.camera.y)*TILE;
-  ctx.fillStyle="#e9cf86"; ctx.fillRect(px-10,py-44,20,44);
+  const aimX = GAME.mouse.worldX - p.x, aimY = GAME.mouse.worldY - (p.y - 0.8);
+  const facing = Math.sign(aimX || 1);
+  ctx.save();
+  ctx.translate(px,py);
+  ctx.scale(facing,1);
+  ctx.fillStyle="#e9cf86"; ctx.fillRect(-10,-44,20,44);
   ctx.fillStyle="#f1ecfa"; ctx.fillRect(px-8,py-52,16,12);
-  ctx.fillStyle="#050505"; ctx.fillRect(px-5,py-49,3,3); ctx.fillRect(px+2,py-49,3,3);
+  ctx.fillStyle="#050505"; ctx.fillRect(-5,-49,3,3); ctx.fillRect(2,-49,3,3);
+  ctx.strokeStyle="#e9cf86"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(8,-28); ctx.lineTo(24,-22); ctx.stroke();
+  ctx.restore();
   if (GAME.scene) {
     const left = Math.max(0, GAME.scene.until - performance.now());
     const total = Math.max(1, GAME.scene.until - GAME.scene.started);
