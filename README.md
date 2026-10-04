@@ -196,5 +196,5 @@ TER-RPG is intended as an original Terraria-inspired project using its own imple
 THE LAST SAVE's original gameplay data is being reused and adapted as part of the connected RPG design in this repository.
 ## Front-end
 
-TER-RPG now opens with an original pixel-art loading screen, main menu, player selector, and world selector. The selected player changes starting stats/gear, while each selected world gets its own generated seed and terrain flavor.
+TER-RPG now opens with an original pixel-art loading screen, main menu, player selector/creator, and world selector/generator. Players can create custom characters with names, archetypes, and colors; worlds can be generated with custom names, seeds, sizes, difficulties, and terrain profiles.
 
