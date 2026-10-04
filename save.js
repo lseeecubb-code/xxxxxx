@@ -12,6 +12,9 @@ function serializableGame() {
     currentZone: GAME.currentZone,
     worldPreset: GAME.worldPreset,
     playerId: GAME.playerId,
+    worldName: GAME.worldName,
+    worldSize: GAME.worldSize,
+    worldDifficulty: GAME.worldDifficulty,
     world: GAME.world,
     player: GAME.player,
     inventory: GAME.inventory,
@@ -48,6 +51,11 @@ function loadGame() {
     GAME.currentZone = saved.currentZone || "The Quiet Road";
     GAME.worldPreset = saved.worldPreset || "everdawn";
     GAME.playerId = saved.playerId || "lys";
+    GAME.worldName = saved.worldName || "Everdawn";
+    GAME.worldSize = saved.worldSize || "large";
+    GAME.worldDifficulty = saved.worldDifficulty || "classic";
+    WORLD_H = saved.world?.length || 100;
+    WORLD_W = saved.world?.[0]?.length || 180;
     GAME.world = saved.world;
     GAME.player = {
       ...GAME.player,
@@ -82,6 +90,13 @@ function newGame(options = {}) {
   GAME.seed = Number.isFinite(options.seed) ? options.seed : Math.floor(Math.random() * 1e9);
   GAME.worldPreset = options.worldPreset || "everdawn";
   GAME.playerId = options.playerId || "lys";
+  GAME.worldName = options.worldName || "Everdawn";
+  GAME.worldSize = options.worldSize || "large";
+  GAME.worldDifficulty = options.worldDifficulty || "classic";
+  const sizeTable = {small:[140,90],medium:[220,110],large:[320,140]};
+  const dims = sizeTable[GAME.worldSize] || sizeTable.large;
+  WORLD_W = dims[0];
+  WORLD_H = dims[1];
   GAME.day = 1;
   GAME.time = 360;
   GAME.currentZone = "The Quiet Road";
