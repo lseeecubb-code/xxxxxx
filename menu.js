@@ -48,10 +48,12 @@ const WORLD_DEFS = {
   }
 };
 
-const MENU_STATE = {
-  playerId: localStorage.getItem("terrpg.player") || "lys",
-  worldId: localStorage.getItem("terrpg.world") || "everdawn",
-  screen: "loading"
+const PLAYER_STORE="terrpg.players.v1";
+const WORLD_STORE="terrpg.worlds.v1";
+const MENU_STATE={
+  playerId:localStorage.getItem("terrpg.player")||"lys",
+  worldId:localStorage.getItem("terrpg.world")||"everdawn",
+  screen:"loading"
 };
 
 function menuEl(id){ return document.getElementById(id); }
@@ -71,98 +73,48 @@ function setMenuScreen(name){
   if(name==="world") menuEl("worldSelector").hidden=false;
 }
 
-function selectedPlayer(){
-  return PLAYER_DEFS[MENU_STATE.playerId] || PLAYER_DEFS.lys;
-}
+function selectedPlayer(){return allPlayers().find(p=>p.id===MENU_STATE.playerId)||PLAYER_DEFS.lys;}
 
-function selectedWorld(){
-  return WORLD_DEFS[MENU_STATE.worldId] || WORLD_DEFS.everdawn;
+function selectedWorld(){return allWorlds().find(w=>w.id===MENU_STATE.worldId)||WORLD_DEFS.everdawn;}
+
+function customPortrait(p){
+  const colors={skin:"#a96f48",hair:"#6f3e28",shirt:"#5d7791",pants:"#334055",boots:"#241b2a"};
+  for(const k of Object.keys(colors))if(/^#[0-9a-f]{6}$/i.test(String(p[k]||"")))colors[k]=p[k];
+  const s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" rx="18" fill="#07101a"/><circle cx="90" cy="50" r="27" fill="'+colors.skin+'"/><path d="M62 44q28-39 56 0v11H62z" fill="'+colors.hair+'"/><rect x="58" y="77" width="64" height="62" rx="9" fill="'+colors.shirt+'"/><rect x="62" y="139" width="24" height="22" fill="'+colors.pants+'"/><rect x="94" y="139" width="24" height="22" fill="'+colors.pants+'"/><rect x="58" y="151" width="29" height="10" fill="'+colors.boots+'"/><rect x="93" y="151" width="29" height="10" fill="'+colors.boots+'"/><circle cx="80" cy="51" r="3" fill="#151019"/><circle cx="101" cy="51" r="3" fill="#151019"/></svg>';
+  return "data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(s);
 }
+function playerImage(p){return p.custom?customPortrait(p):p.image;}
 
 function renderPlayerSelector(){
-  const list=menuEl("playerCards");
-  const detail=menuEl("playerDetail");
-  if(!list||!detail) return;
-  list.innerHTML=Object.values(PLAYER_DEFS).map((p)=>{
-    const selected=p.id===MENU_STATE.playerId;
-    return '<button class="selector-card '+(selected?"selected":"")+'" data-player="'+p.id+'" type="button">'+
-      '<img src="'+p.image+'" alt="">'+
-      '<span class="card-copy"><strong>'+p.name+'</strong><small>'+p.role+' · '+p.style+'</small><small>'+p.description+'</small></span>'+
-      '<span class="card-mark">'+(selected?"◆":"◇")+'</span>'+
-    '</button>';
+  const list=menuEl("playerCards"),detail=menuEl("playerDetail");
+  if(!list||!detail)return;
+  list.innerHTML=allPlayers().map(p=>{
+    const sel=p.id===MENU_STATE.playerId;
+    return '<button class="selector-card '+(sel?"selected":"")+'" data-player="'+p.id+'" type="button"><img src="'+playerImage(p)+'" alt=""><span class="card-copy"><strong>'+escapeHtml(p.name)+'</strong><small>'+escapeHtml(p.role)+' · '+escapeHtml(p.style||"Adventurer")+(p.custom?" · CUSTOM":"")+'</small><small>'+escapeHtml(p.description||"Custom adventurer.")+'</small></span><span class="card-mark">'+(sel?"◆":"◇")+'</span></button>';
   }).join("");
-  list.querySelectorAll("[data-player]").forEach((button)=>{
-    button.addEventListener("click",()=>{
-      MENU_STATE.playerId=button.dataset.player;
-      localStorage.setItem("terrpg.player",MENU_STATE.playerId);
-      renderPlayerSelector();
-    });
-  });
+  list.querySelectorAll("[data-player]").forEach(b=>b.addEventListener("click",()=>{MENU_STATE.playerId=b.dataset.player;localStorage.setItem("terrpg.player",MENU_STATE.playerId);renderPlayerSelector();}));
   const p=selectedPlayer();
-  detail.innerHTML='<div><b>'+p.name+'</b><span>'+p.role+' · '+p.style+'</span></div>'+
-    '<div class="stat-strip">'+Object.entries(p.stats).map(([k,v])=>'<span>'+k.toUpperCase()+' <b>'+v+'</b></span>').join("")+'</div>';
+  detail.innerHTML='<div><b>'+escapeHtml(p.name)+'</b><span>'+escapeHtml(p.role)+' · '+escapeHtml(p.style||"Adventurer")+'</span></div><div class="stat-strip">'+Object.entries(p.stats||{}).map(([k,v])=>'<span>'+k.toUpperCase()+' <b>'+v+'</b></span>').join("")+'</div>';
+  const del=menuEl("deletePlayerButton"); if(del)del.disabled=!p.custom;
 }
 
 function renderWorldSelector(){
-  const list=menuEl("worldCards");
-  const detail=menuEl("worldDetail");
-  if(!list||!detail) return;
-  list.innerHTML=Object.values(WORLD_DEFS).map((w)=>{
-    const selected=w.id===MENU_STATE.worldId;
-    return '<button class="selector-card world-card '+(selected?"selected":"")+'" data-world="'+w.id+'" type="button">'+
-      '<img src="'+w.image+'" alt="">'+
-      '<span class="card-copy"><strong>'+w.name+'</strong><small>'+w.size+' World · '+w.difficulty+'</small><small>'+w.description+'</small></span>'+
-      '<span class="card-mark">'+(selected?"◆":"◇")+'</span>'+
-    '</button>';
+  const list=menuEl("worldCards"),detail=menuEl("worldDetail");
+  if(!list||!detail)return;
+  list.innerHTML=allWorlds().map(w=>{
+    const sel=w.id===MENU_STATE.worldId;
+    return '<button class="selector-card world-card '+(sel?"selected":"")+'" data-world="'+w.id+'" type="button"><img src="'+w.image+'" alt=""><span class="card-copy"><strong>'+escapeHtml(w.name)+'</strong><small>'+escapeHtml(w.size)+' World · '+escapeHtml(w.difficulty)+(w.custom?" · CUSTOM":"")+'</small><small>'+escapeHtml(w.description)+'</small></span><span class="card-mark">'+(sel?"◆":"◇")+'</span></button>';
   }).join("");
-  list.querySelectorAll("[data-world]").forEach((button)=>{
-    button.addEventListener("click",()=>{
-      MENU_STATE.worldId=button.dataset.world;
-      localStorage.setItem("terrpg.world",MENU_STATE.worldId);
-      renderWorldSelector();
-    });
-  });
+  list.querySelectorAll("[data-world]").forEach(b=>b.addEventListener("click",()=>{MENU_STATE.worldId=b.dataset.world;localStorage.setItem("terrpg.world",MENU_STATE.worldId);renderWorldSelector();}));
   const w=selectedWorld();
-  detail.innerHTML='<div><b>'+w.name+'</b><span>'+w.size+' world · '+w.difficulty+'</span></div>'+
-    '<div class="seed-readout">WORLD CODE · '+w.seedSalt+' · generated fresh when you press PLAY</div>';
-  const label=menuEl("selectedWorldLabel");
-  if(label) label.textContent=w.name;
+  detail.innerHTML='<div><b>'+escapeHtml(w.name)+'</b><span>'+escapeHtml(w.size)+' world · '+escapeHtml(w.difficulty)+'</span></div><div class="seed-readout">SEED · '+(w.seed??"fresh random")+' · '+escapeHtml(w.type||"everdawn")+' terrain profile</div>';
+  menuEl("selectedWorldLabel").textContent=w.name;
+  const del=menuEl("deleteWorldButton"); if(del)del.disabled=!w.custom;
 }
 
-function applyPlayerPreset(def){
-  const p=GAME.player;
-  p.str=def.stats.str; p.agi=def.stats.agi; p.vit=def.stats.vit; p.foc=def.stats.foc;
-  p.weapon=def.weapon;
-  p.equipment.weapon=def.weapon;
-  p.spells=def.id==="vera"?["ember spark","frostbite","mend"]:def.id==="kael"?["mend","ember spark"]:["ember spark","mend"];
-  p.hp=p.maxHp; p.energy=p.maxEnergy;
-  GAME.playerId=def.id;
-  recalcPlayer();
-  p.hp=p.maxHp; p.energy=p.maxEnergy;
-}
+function applyPlayerPreset(def){const p=GAME.player,s=def.stats||archetypeStats("balanced");p.str=s.str;p.agi=s.agi;p.vit=s.vit;p.foc=s.foc;p.weapon=def.weapon||"wooden sword";p.equipment.weapon=ITEMS[p.weapon]?p.weapon:"wooden sword";p.spells=def.style==="Mystic"?["ember spark","frostbite","mend"]:def.style==="Ranged"?["ember spark","frostbite","mend"]:def.style==="Guardian"?["mend","ember spark"]:["ember spark","mend"];GAME.playerId=def.id;recalcPlayer();p.hp=p.maxHp;p.energy=p.maxEnergy;}
 
-function freshSeedForWorld(world){
-  const base=Math.floor(Math.random()*900000000);
-  return (base + world.seedSalt) % 1000000000;
-}
-
-function startSelectedAdventure(){
-  const p=selectedPlayer();
-  const w=selectedWorld();
-  newGame({seed:freshSeedForWorld(w), worldPreset:w.id, playerId:p.id});
-  applyPlayerPreset(p);
-  GAME.world = createWorld();
-  GAME.worldGenComplete = true;
-  GAME.currentZone = "The Quiet Road";
-  GAME.camera.x = 0; GAME.camera.y = 0;
-  GAME.player.x = 12;
-  GAME.player.y = findSurface(12)-0.02;
-  GAME.enemies = [];
-  GAME.discovered = new Set();
-  GAME.flags.worldName=w.name;
-  saveGame(true);
-  enterGameplay();
-}
+function startSelectedAdventure(){const p=selectedPlayer(),w=selectedWorld();newGame({seed:Number.isFinite(w.seed)?w.seed:freshSeedForWorld(w),worldPreset:w.type||w.id,worldName:w.name,worldSize:w.size,worldDifficulty:w.difficulty,playerId:p.id});applyPlayerPreset(p);GAME.world=createWorld();GAME.worldGenComplete=true;GAME.currentZone="The Quiet Road";GAME.camera.x=0;GAME.camera.y=0;GAME.player.x=12;GAME.player.y=findSurface(12)-0.02;GAME.enemies=[];GAME.discovered=new Set();GAME.flags.worldName=w.name;saveGame(true);enterGameplay();}
 
 function continueAdventure(){
   if(!loadGame()){
