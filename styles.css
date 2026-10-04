@@ -141,3 +141,32 @@ body{overflow:hidden;color:var(--text);user-select:none}
   .menu-panel{padding:18px}
   .selector-footer{align-items:stretch;flex-direction:column}
 }
+
+.creator-panel{width:min(820px,94vw)}
+.mini-label{padding:8px 10px;color:#5f566d;font-size:8px;letter-spacing:.12em}
+.creator-grid{display:grid;grid-template-columns:240px 1fr;gap:22px;align-items:start;margin-top:18px}
+.creator-preview-wrap{border:1px solid #2b2440;background:#05050b;padding:14px;text-align:center}
+.creator-preview{display:block;width:190px;height:190px;margin:auto;image-rendering:pixelated;background:#02030a;border:1px solid #1b1527}
+.creator-preview-name{margin-top:9px;color:#80778e;font-size:9px;letter-spacing:.12em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.creator-form{display:grid;gap:11px}
+.creator-form label{display:grid;gap:5px;color:#80778e;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+.creator-form input,.creator-form select{width:100%;border:1px solid #2d2540;background:#06060d;color:#e2dcea;padding:9px;font:inherit;font-size:11px;outline:none}
+.creator-form input:focus,.creator-form select:focus{border-color:#8ff0e4}
+.color-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.color-grid label{font-size:8px}
+.color-grid input{height:38px;padding:3px;cursor:pointer}
+.creator-note{margin:0;color:#625a6c;font-size:9px;line-height:1.5}
+.world-creator-grid{grid-template-columns:1.15fr 1fr}
+.world-creator-grid .creator-preview-wrap{padding:10px}
+.world-creator-preview{width:100%;height:auto;aspect-ratio:520/180;display:block;object-fit:cover;border:1px solid #21192e;image-rendering:pixelated}
+.seed-input{display:grid;grid-template-columns:1fr auto;gap:6px}
+.seed-input .mini-button{padding:0 10px}
+.selector-tools{display:flex;gap:7px}
+.danger{color:#b36b77!important}
+.danger:hover:not(:disabled){border-color:#b36b77!important;color:#ff929f!important}
+@media(max-width:700px){
+  .creator-grid,.world-creator-grid{grid-template-columns:1fr}
+  .creator-preview-wrap{max-width:260px;margin:auto;width:100%}
+  .creator-preview{width:160px;height:160px}
+  .color-grid{grid-template-columns:repeat(5,1fr)}
+}
