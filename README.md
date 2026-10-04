@@ -194,3 +194,7 @@ The current implementation establishes the core sandbox + RPG architecture and p
 TER-RPG is intended as an original Terraria-inspired project using its own implementation and presentation. It does not include Terraria's proprietary source code or copied game assets.
 
 THE LAST SAVE's original gameplay data is being reused and adapted as part of the connected RPG design in this repository.
+## Front-end
+
+TER-RPG now opens with an original pixel-art loading screen, main menu, player selector, and world selector. The selected player changes starting stats/gear, while each selected world gets its own generated seed and terrain flavor.
+
