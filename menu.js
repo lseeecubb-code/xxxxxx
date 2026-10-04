@@ -13,14 +13,14 @@ const PLAYER_DEFS = {
     id:"kael", name:"Kael", role:"Bell Warden", style:"Guardian",
     image:"assets/player-kael.svg",
     description:"Durable protector built for close-range survival.",
-    stats:{str:5,agi:4,vit:7,foc:4}, weapon:"iron shield",
+    stats:{str:5,agi:4,vit:7,foc:4}, weapon:"shell shield",
     accent:"violet"
   },
   vera: {
     id:"vera", name:"Vera", role:"Wayfinder", style:"Ranged",
     image:"assets/player-vera.svg",
     description:"Agile scout with extra focus for spells and ranged gear.",
-    stats:{str:4,agi:7,vit:5,foc:6}, weapon:"short bow",
+    stats:{str:4,agi:7,vit:5,foc:6}, weapon:"hunter bow",
     accent:"cyan"
   }
 };
@@ -125,6 +125,8 @@ function renderWorldSelector(){
   const w=selectedWorld();
   detail.innerHTML='<div><b>'+w.name+'</b><span>'+w.size+' world · '+w.difficulty+'</span></div>'+
     '<div class="seed-readout">WORLD CODE · '+w.seedSalt+' · generated fresh when you press PLAY</div>';
+  const label=menuEl("selectedWorldLabel");
+  if(label) label.textContent=w.name;
 }
 
 function applyPlayerPreset(def){
@@ -236,8 +238,9 @@ function initMenu(){
   menuEl("worldMenuButton").addEventListener("click",()=>{renderWorldSelector();setMenuScreen("world");});
   menuEl("playerBack").addEventListener("click",()=>setMenuScreen("main"));
   menuEl("worldBack").addEventListener("click",()=>setMenuScreen("main"));
+  menuEl("selectorWorldButton").addEventListener("click",()=>setMenuScreen("world"));
   menuEl("startWorldButton").addEventListener("click",startSelectedAdventure);
-  menuEl("selectorPlayerButton").addEventListener("click",()=>setMenuScreen("player"));
+  menuEl("selectorPlayerButton").addEventListener("click",()=>setMenuScreen("world"));
   menuEl("menuButton").addEventListener("click",returnToMenu);
   bootMenu();
 }
