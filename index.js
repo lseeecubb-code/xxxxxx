@@ -133,6 +133,24 @@ async function handleCommand(raw) {
     case "c":
       if (!arg) { refreshCrafting(); togglePanel(craftPanel, true); togglePanel(inventoryPanel, false); break; }
       craftItem(arg); break;
+    case "recipes": listRecipes(arg); break;
+    case "use": useCombatItem(arg || "potion"); break;
+    case "equip": {
+      const item = findItemMatch(arg);
+      if (item) equipItem(item); else print("Unknown gear: " + arg);
+      break;
+    }
+    case "quests": showQuests(); break;
+    case "party": showParty(); break;
+    case "perks": if (arg) unlockPerk(arg); else showPerks(); break;
+    case "story": showStory(); break;
+    case "guide": showGuide(); break;
+    case "chronicle": showChronicle(); break;
+    case "ending":
+      if (arg && chooseEnding(arg)) break;
+      showEnding();
+      break;
+    case "town": showTown(); break;
     case "explore": exploreArea(); break;
     case "mine": mineTarget(); break;
     case "place": placeBlock(arg || "dirt"); break;
