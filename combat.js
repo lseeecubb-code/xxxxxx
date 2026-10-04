@@ -272,6 +272,14 @@ function monsterAttack(enemy) {
   if (!enemy || enemy.hp <= 0 || p.hp <= 0) return;
   const {name, data} = chooseEnemyAttack(enemy);
   const move = makeAttack(name, data);
+  const rangedName = /bow|shot|bolt|projectile|missile|beam|lance|spell|ray|fireball|frost/i.test(name) || data?.ranged;
+  if(rangedName){
+    const dx=p.x-enemy.x,dy=(p.y-0.8)-enemy.y,len=Math.max(0.001,Math.hypot(dx,dy));
+    const amount=move.damage ? rollDamage(move.damage) : randint(2,6);
+    fireProjectile({x:enemy.x,y:enemy.y-0.8,tx:p.x,ty:p.y-0.8,speed:Number(data?.speed)||9,damage:amount,effect:data?.special_effect||null,source:"enemy",element:data?.element||null});
+    if(sceneKey){ /* visual already selected below */ }
+    return;
+  }
   const sceneKey = getAttackScene(enemy.name, name);
   if (sceneKey) showAttackScene(sceneKey, enemy.name, name);
   const now = performance.now();
@@ -362,6 +370,8 @@ function updateProjectiles(dt) {
     pr.y += pr.vy * dt;
     pr.life -= dt;
     if (pr.x < 0 || pr.y < 0 || pr.x >= WORLD_W || pr.y >= WORLD_H) pr.life = 0;
+    const tx=Math.floor(pr.x),ty=Math.floor(pr.y);
+    if(GAME.world?.[ty]?.[tx] && BLOCKS[GAME.world[ty][tx]]?.solid){pr.life=0;continue;}
     if (pr.source === "player") {
       for (const enemy of GAME.enemies) {
         if (enemy.hp <= 0) continue;
