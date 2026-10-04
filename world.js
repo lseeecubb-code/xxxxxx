@@ -202,6 +202,15 @@ function mineTarget() {
 
 function mineOrAttackAtCursor() {
   updateMouseWorld();
+  const selected = HOTBAR[GAME.selectedHotbar];
+  if (USABLE_ITEMS[selected]) {
+    useCombatItem(selected);
+    return;
+  }
+  if (ITEMS[selected]) {
+    playerAttack(enemyAtCursor(1.05) || null);
+    return;
+  }
   const enemy = GAME.enemies.find((e) => {
     const dx = GAME.mouse.worldX - e.x, dy = GAME.mouse.worldY - (e.y - 0.6);
     return Math.hypot(dx,dy) < 0.8;
