@@ -188,7 +188,7 @@ function enterGameplay(){
 }
 
 function returnToMenu(){
-  GAME.gameStarted=false;
+  stopGameLoop();
   if(GAME.mouse){ GAME.mouse.down=false; GAME.mouse.rightDown=false; }
   menuEl("gameShell").hidden=true;
   menuEl("menuBackdrop").hidden=false;
@@ -238,7 +238,7 @@ function initMenu(){
   menuEl("worldMenuButton").addEventListener("click",()=>{renderWorldSelector();setMenuScreen("world");});
   menuEl("playerBack").addEventListener("click",()=>setMenuScreen("main"));
   menuEl("worldBack").addEventListener("click",()=>setMenuScreen("main"));
-  menuEl("selectorWorldButton").addEventListener("click",()=>setMenuScreen("world"));
+  menuEl("selectorWorldButton").addEventListener("click",()=>{renderPlayerSelector();setMenuScreen("player");});
   menuEl("startWorldButton").addEventListener("click",startSelectedAdventure);
   menuEl("selectorPlayerButton").addEventListener("click",()=>setMenuScreen("world"));
   menuEl("menuButton").addEventListener("click",returnToMenu);
