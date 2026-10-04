@@ -201,7 +201,7 @@ function startup() {
   ensureStory();
   storyIntro();
   consolePanel.hidden = true;
-  termInput.focus();
+  document.getElementById("world").focus();
   resizeCanvas();
   requestAnimationFrame(gameFrame);
 }
