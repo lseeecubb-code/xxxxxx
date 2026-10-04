@@ -122,7 +122,17 @@ function startCombat(name = "") {
   GAME.combat = { targetId:target.id, active:true, lastAttack:null };
   GAME.discovered.add(target.name);
   const opening = getMonsterOpening(target.name);
-  if (opening) showScene("openings." + target.name, target.name);
+  if (opening) {
+    print("\n[" + (opening.title || "ENCOUNTER") + "]");
+    for (const line of opening.lines || []) print(line);
+    GAME.scene = {
+      key: opening.scene || "opening",
+      label: opening.title || target.displayName,
+      until: performance.now() + 1500,
+      started: performance.now(),
+      recipe: GAME_SCENES.openingVisuals?.[opening.scene] || null
+    };
+  }
   if (opening?.scene && GAME_SCENES.openingVisuals?.[opening.scene]) {
     GAME.scene = {
       key:opening.scene,label:opening.title,until:performance.now()+1200,started:performance.now(),
