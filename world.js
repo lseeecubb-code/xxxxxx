@@ -9,6 +9,7 @@ function noise2(x, y, seed) {
 }
 
 function createWorld() {
+  const preset = (typeof WORLD_DEFS !== "undefined" && WORLD_DEFS[GAME.worldPreset]) || {};
   const tiles = Array.from({ length: WORLD_H }, () => Array(WORLD_W).fill("air"));
   let surface = 34;
   for (let x = 0; x < WORLD_W; x++) {
@@ -17,11 +18,16 @@ function createWorld() {
     const zone = x < 50 ? "quiet" : x < 95 ? "frontier" : x < 125 ? "ash" : "void";
     for (let y = surface; y < WORLD_H; y++) {
       let block = "stone";
-      if (y === surface) block = zone === "ash" ? "ash" : zone === "void" ? "stone" : "grass";
+      if (y === surface) {
+        if (GAME.worldPreset === "ashenreach") block = zone === "void" ? "obsidian" : "ash";
+        else if (GAME.worldPreset === "frostfall") block = zone === "void" ? "stone" : "snow";
+        else if (GAME.worldPreset === "nullreach") block = zone === "void" ? "obsidian" : "stone";
+        else block = zone === "ash" ? "ash" : zone === "void" ? "stone" : "grass";
+      }
       else if (y < surface + 5) block = zone === "frontier" ? "dirt" : "dirt";
-      if (zone === "quiet" && y >= surface && y <= surface + 2 && Math.sin(x / 9) > 0.55) block = "sand";
-      if (zone === "frontier" && y > surface + 9 && y % 17 === 0) block = "iron";
-      if (zone === "ash" && y > surface + 8 && x % 19 === 0) block = "crystal";
+      if (zone === "quiet" && y >= surface && y <= surface + 2 && Math.sin(x / 9) > 0.55 && GAME.worldPreset !== "frostfall") block = "sand";
+      if (zone === "frontier" && y > surface + 9 && y % 17 === 0) block = GAME.worldPreset === "ashenreach" ? "gold" : "iron";
+      if (zone === "ash" && y > surface + 8 && x % 19 === 0) block = GAME.worldPreset === "nullreach" ? "obsidian" : "crystal";
       if (zone === "void" && y > surface + 5 && x % 23 === 0) block = "obsidian";
       const cave = y > surface + 7 && y < WORLD_H - 5 && noise2(x * 1.7, y * 1.3, GAME.seed + 11) > 0.84;
       if (cave && y > surface + 4) block = "air";
@@ -38,7 +44,7 @@ function createWorld() {
   for (let x = 3; x < WORLD_W - 3; x += randint(5, 10)) {
     let surfaceY = -1;
     for (let y = 0; y < 55; y++) if (tiles[y][x] !== "air") { surfaceY = y; break; }
-    if (surfaceY > 3 && tiles[surfaceY][x] === "grass") {
+    if (surfaceY > 3 && (tiles[surfaceY][x] === "grass" || (GAME.worldPreset === "frostfall" && tiles[surfaceY][x] === "snow"))) {
       const h = randint(3, 6);
       for (let y = surfaceY - h; y < surfaceY; y++) if (tiles[y]?.[x] === "air") tiles[y][x] = "wood";
       for (let dx = -2; dx <= 2; dx++) for (let dy = -2; dy <= 0; dy++) {
@@ -48,6 +54,10 @@ function createWorld() {
     }
   }
   return tiles;
+}
+
+function worldPresetLabel(){
+  return (typeof WORLD_DEFS !== "undefined" && WORLD_DEFS[GAME.worldPreset]?.name) || "Everdawn";
 }
 
 function zoneAtX(x) {
@@ -330,7 +340,7 @@ function updatePlayer(dt) {
 function exploreArea() {
   ensureWorld();
   const zone = zoneAtX(GAME.player.x);
-  print("EXPLORE · " + zone.name);
+  print("EXPLORE · " + worldPresetLabel() + " · " + zone.name);
   print("Biome: " + zone.biome + " · Nearby enemies: " + zone.enemies.filter((n) => monsters[n]).map(title).join(", "));
   for (let i = 0; i < 2; i++) {
     const choices = zone.enemies.filter((n) => monsters[n]);
@@ -402,7 +412,10 @@ function drawWorld() {
   ctx.clearRect(0, 0, w, h);
   const zone = zoneAtX(GAME.player.x);
   const daylight = (Math.sin((GAME.time / 1440) * Math.PI * 2 - Math.PI/2) + 1) / 2;
-  ctx.fillStyle = zone.biome === "ash" ? "#130d0d" : zone.biome === "void" ? "#05030a" : "#050a10";
+  ctx.fillStyle = GAME.worldPreset === "frostfall" ? "#061018" :
+    GAME.worldPreset === "ashenreach" ? "#130b13" :
+    GAME.worldPreset === "nullreach" ? "#05020a" :
+    zone.biome === "ash" ? "#130d0d" : zone.biome === "void" ? "#05030a" : "#050a10";
   ctx.fillRect(0, 0, w, h);
   const stars = 80;
   ctx.fillStyle = "#ffffff99";
@@ -451,14 +464,15 @@ function drawWorld() {
     ctx.fillText(monsters[e.name]?.icon || "?", px, py-38);
   }
   const p=GAME.player;
+  const playerDef = (typeof PLAYER_DEFS !== "undefined" && PLAYER_DEFS[GAME.playerId]) || {};
   const px=(p.x-GAME.camera.x)*TILE, py=(p.y-GAME.camera.y)*TILE;
   const aimX = GAME.mouse.worldX - p.x, aimY = GAME.mouse.worldY - (p.y - 0.8);
   const facing = Math.sign(aimX || 1);
   ctx.save();
   ctx.translate(px,py);
   ctx.scale(facing,1);
-  ctx.fillStyle="#e9cf86"; ctx.fillRect(-10,-44,20,44);
-  ctx.fillStyle="#f1ecfa"; ctx.fillRect(px-8,py-52,16,12);
+  ctx.fillStyle=playerDef.accent==="violet" ? "#806a9c" : playerDef.accent==="cyan" ? "#5ed2e0" : "#e9cf86"; ctx.fillRect(-10,-44,20,44);
+  ctx.fillStyle="#f1ecfa"; ctx.fillRect(-8,-56,16,12);
   ctx.fillStyle="#050505"; ctx.fillRect(-5,-49,3,3); ctx.fillRect(2,-49,3,3);
   ctx.strokeStyle="#e9cf86"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(8,-28); ctx.lineTo(24,-22); ctx.stroke();
   ctx.restore();
