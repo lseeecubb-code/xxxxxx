@@ -96,9 +96,20 @@ function getWeaponSkill(name) {
   return SKILLS[id] ? { name:id, data:SKILLS[id] } : null;
 }
 
+function enemyAtCursor(radius = 0.9) {
+  updateMouseWorld();
+  let best = null, bestD = radius;
+  for (const enemy of GAME.enemies) {
+    if (enemy.hp <= 0) continue;
+    const d = Math.hypot(GAME.mouse.worldX - enemy.x, GAME.mouse.worldY - (enemy.y - 0.6));
+    if (d < bestD) { best = enemy; bestD = d; }
+  }
+  return best;
+}
+
 function selectTarget(target) {
   if (target) return target;
-  return nearestEnemy(7);
+  return enemyAtCursor(1.0) || nearestEnemy(9);
 }
 
 function startCombat(name = "") {
@@ -161,7 +172,8 @@ function playerAttack(target = null) {
   if (!playerCanAct()) return false;
   const enemy = selectTarget(target || combatTarget());
   if (!enemy) { toastMsg("NO TARGET"); return false; }
-  if (distance(p, enemy) > 2.2 && target == null) { toastMsg("GET CLOSER"); return false; }
+  const ranged = /bow|staff|wand|scepter|rod/i.test(weapon);
+  if (!ranged && distance(p, enemy) > 2.8 && target == null) { toastMsg("GET CLOSER"); return false; }
   const now = performance.now();
   if ((p.cooldownUntil || 0) > now) return false;
   const weapon = p.equipment.weapon || "wooden sword";
@@ -177,7 +189,20 @@ function playerAttack(target = null) {
   }
   const weak = monsters[enemy.name]?.weak?.[data.element || ""] || 0;
   if (weak) damage = Math.round(damage * (1 + weak/100));
-  hurtEnemy(enemy, damage, skill?.name || "basic attack", data.effect);
+  if (ranged) {
+    fireProjectile({
+      x:p.x + (GAME.mouse.worldX-p.x)*0.08,
+      y:p.y - 0.8,
+      tx:GAME.mouse.worldX,
+      ty:GAME.mouse.worldY,
+      speed:18,
+      damage,
+      effect:data.effect || null,
+      source:"player"
+    });
+  } else {
+    hurtEnemy(enemy, damage, skill?.name || "basic attack", data.effect);
+  }
   if (data.recoil) p.hp = Math.max(1, p.hp - data.recoil);
   p.energy = clamp(p.energy + 1, 0, p.maxEnergy);
   p.cooldownUntil = now + (data.cooldown ? data.cooldown*350 : data.type === "slow" ? 520 : 260);
@@ -233,7 +258,10 @@ function castPlayerSpell(name = "ember spark") {
     const weak = monsters[enemy.name]?.weak?.[sp.element] || 0;
     damage = Math.round(damage * (1 + weak/100));
   }
-  hurtEnemy(enemy, damage, key, sp.effect);
+  fireProjectile({
+    x:p.x, y:p.y-0.9, tx:GAME.mouse.worldX, ty:GAME.mouse.worldY,
+    speed:20, damage, effect:sp.effect || null, source:"player", element:sp.element || null
+  });
   print("CAST " + title(key) + " · " + damage + " damage");
   return true;
 }
@@ -316,3 +344,56 @@ function combatCommandAction(action, arg) {
   if (action === "fight") return startCombat(arg || "");
   return false;
 }
+
+
+function fireProjectile({x,y,tx,ty,speed=18,damage=5,effect=null,source="player",element=null}) {
+  GAME.projectiles ||= [];
+  const dx = tx - x, dy = ty - y, len = Math.max(0.001, Math.hypot(dx,dy));
+  GAME.projectiles.push({
+    x,y,vx:dx/len*speed,vy:dy/len*speed,life:2.2,damage,effect,source,element,radius:0.18
+  });
+}
+
+function updateProjectiles(dt) {
+  if (!GAME.projectiles?.length) return;
+  for (const pr of GAME.projectiles) {
+    pr.x += pr.vx * dt;
+    pr.y += pr.vy * dt;
+    pr.life -= dt;
+    if (pr.x < 0 || pr.y < 0 || pr.x >= WORLD_W || pr.y >= WORLD_H) pr.life = 0;
+    if (pr.source === "player") {
+      for (const enemy of GAME.enemies) {
+        if (enemy.hp <= 0) continue;
+        if (Math.hypot(pr.x-enemy.x, pr.y-(enemy.y-0.6)) < 0.65) {
+          hurtEnemy(enemy, pr.damage, "projectile", pr.effect);
+          pr.life = 0;
+          break;
+        }
+      }
+    } else if (pr.source === "enemy") {
+      const p = GAME.player;
+      if (Math.hypot(pr.x-p.x, pr.y-(p.y-0.7)) < 0.7) {
+        p.hp = Math.max(0, p.hp - pr.damage);
+        p.effects ||= [];
+        if (pr.effect) effectOn(p,pr.effect);
+        pr.life = 0;
+      }
+    }
+  }
+  GAME.projectiles = GAME.projectiles.filter((p)=>p.life>0);
+}
+
+const previousDrawWorld = drawWorld;
+drawWorld = function() {
+  previousDrawWorld();
+  const canvas = document.getElementById("world");
+  const ctx = canvas.getContext("2d");
+  if (!GAME.projectiles?.length) return;
+  ctx.save();
+  for (const pr of GAME.projectiles) {
+    const px=(pr.x-GAME.camera.x)*TILE, py=(pr.y-GAME.camera.y)*TILE;
+    ctx.fillStyle = pr.element === "fire" ? "#ff6b4a" : pr.element === "frost" ? "#bfe7ff" : pr.element === "lightning" ? "#e5d6ff" : "#f1ecfa";
+    ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+};
