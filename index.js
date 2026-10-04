@@ -106,7 +106,7 @@ function showScenes() {
   print("Use fight [enemy] to trigger opening and attack scenes in-world.");
 }
 
-async async function handleCommand(raw) {
+async function handleCommand(raw) {
   const line = raw.trim();
   if (!line) return;
   commandHistory.push(line);
