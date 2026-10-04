@@ -225,6 +225,7 @@ function resizeCanvas() {
 }
 
 function gameFrame(time) {
+  if (!gameLoopRunning) return;
   updateGame(time);
   drawWorld();
   renderHud();
